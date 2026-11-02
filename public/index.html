@@ -3,77 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DataCrazy – Acervo e Relatórios</title>
+<title>DataCrazy – Relatórios</title>
 <link rel="icon" href="data:,">
 <style>
+  :root {
+    --bg: #f7f7f8; --surface: #fff; --border: #e7e7ea; --border-soft: #f0f0f2;
+    --text: #18181b; --muted: #71717a; --faint: #a1a1aa;
+    --accent: #4f46e5; --accent-soft: #eef0ff; --danger: #b91c1c; --ok: #15803d;
+    --radius: 8px; --sidebar: 264px;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f4f5f7; color: #1f2328; }
-  .page { max-width: 1400px; margin: 0 auto; padding: 24px 20px 60px; }
-  .page > h1 { font-size: 22px; margin: 0 0 4px; }
-  .page > p { margin: 0 0 24px; color: #6b7280; font-size: 14px; }
-  h2.section { font-size: 15px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin: 32px 0 10px; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
 
-  details { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; margin-bottom: 10px; }
-  details > summary { list-style: none; cursor: pointer; padding: 14px 18px; display: flex; align-items: center; gap: 10px; user-select: none; }
-  details > summary::-webkit-details-marker { display: none; }
-  details > summary::before { content: '▸'; color: #6b7280; transition: transform .15s; }
-  details[open] > summary::before { transform: rotate(90deg); }
-  details > summary:hover { background: #fafbfc; border-radius: 10px; }
-  .body { padding: 0 18px 18px; }
+  /* ---------- layout ---------- */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: var(--sidebar); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+  .brand { padding: 20px 20px 16px; border-bottom: 1px solid var(--border-soft); }
+  .brand strong { display: block; font-size: 15px; letter-spacing: -.01em; }
+  .brand span { font-size: 12px; color: var(--muted); }
+  .nav { padding: 12px 10px 24px; }
+  .nav-group { margin-bottom: 18px; }
+  .nav-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); padding: 0 10px 6px; display: flex; justify-content: space-between; }
+  .nav a { display: block; padding: 7px 10px; border-radius: 6px; color: var(--text); text-decoration: none; font-size: 13.5px; }
+  .nav a:hover { background: var(--bg); }
+  .nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  .nav a small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; }
+  .nav a.active small { color: var(--accent); opacity: .75; }
+  .nav .none { font-size: 12.5px; color: var(--faint); padding: 4px 10px; }
 
-  details.acervo { border: 2px solid #4f46e5; }
-  details.acervo > summary { font-size: 17px; font-weight: 600; }
-  details.acervo details { margin: 0 0 8px; }
-  details.acervo details > summary { font-weight: 500; }
-  details.report > summary { flex-wrap: wrap; }
-  .sumtitle { font-weight: 600; }
-  .sumhint { font-size: 12px; color: #6b7280; font-weight: normal; margin-left: auto; }
-  .pedido { flex-basis: 100%; font-size: 13px; color: #6b7280; padding-left: 20px; font-style: italic; }
+  .main { flex: 1; min-width: 0; padding: 32px 40px 64px; }
+  .view { max-width: 1280px; }
+  .view[hidden] { display: none; }
+  .view-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+  .view-head > div { flex: 1; min-width: 0; }
+  .view-head h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.015em; }
+  .view-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  .view-head .pedido { margin-top: 8px; padding-left: 10px; border-left: 2px solid var(--border); }
+  .view-head code, .toolbar code { font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--muted); }
 
-  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-  .toolbar code { font-size: 12px; color: #6b7280; margin-right: auto; }
-  input, select { padding: 6px 9px; border: 1px solid #d0d4da; border-radius: 6px; font-size: 13px; }
-  .btn { padding: 6px 11px; border: 1px solid #d0d4da; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .menu-btn { display: none; }
+
+  /* ---------- controles ---------- */
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .toolbar .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  input, select { height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 13px; outline: none; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  input.search { width: 220px; }
+  .btn { height: 32px; padding: 0 12px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+  .btn:hover:not(:disabled) { background: var(--bg); }
   .btn:disabled { opacity: .4; cursor: default; }
-  .meta { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
 
-  .cards { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-  .card { background: #f8f9fb; border: 1px solid #eef0f2; border-radius: 8px; padding: 10px 14px; min-width: 140px; }
-  .card .v { font-size: 20px; font-weight: 600; }
-  .card .l { font-size: 12px; color: #6b7280; }
-  h3.sec { font-size: 14px; margin: 18px 0 8px; }
+  /* ---------- conteúdo ---------- */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .meta { font-size: 12px; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--border-soft); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .card .l { font-size: 12px; color: var(--muted); }
+  .card .v { font-size: 22px; font-weight: 600; letter-spacing: -.02em; margin-top: 2px; }
+  h3.sec { font-size: 14px; font-weight: 600; margin: 24px 0 10px; }
+  .secao + .secao { margin-top: 8px; }
 
   .tablewrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eef0f2; vertical-align: top; }
-  th { background: #f8f9fb; font-weight: 600; white-space: nowrap; }
+  th, td { padding: 9px 16px; text-align: left; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; background: #fbfbfc; }
+  tbody tr:last-child td { border-bottom: 0; }
   tbody tr { cursor: pointer; }
-  tbody tr:hover { background: #f5f5ff; }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #fff; margin: 1px 2px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #eef0f2; }
-  .yes { color: #16a34a; } .no { color: #9ca3af; }
-  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; border: 1px solid #0002; }
-  .empty, .error { padding: 24px; text-align: center; color: #6b7280; }
-  .error { color: #b91c1c; }
+  tbody tr:hover { background: #fafafb; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; color: #fff; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; background: #f1f1f3; color: #3f3f46; white-space: nowrap; }
+  .yes { color: var(--ok); } .no { color: var(--faint); }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid #0001; }
+  .empty, .error { padding: 40px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .error { color: var(--danger); }
+  .welcome { padding: 64px 16px; text-align: center; color: var(--muted); }
+  .welcome h1 { color: var(--text); font-size: 18px; margin: 0 0 6px; }
 
-  dialog { width: min(900px, 92vw); max-height: 85vh; border: 0; border-radius: 10px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
-  dialog .head { position: sticky; top: 0; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #e3e5e8; }
-  dialog h2 { margin: 0; font-size: 16px; }
-  dialog pre { margin: 0; padding: 16px 18px; font-size: 12px; white-space: pre-wrap; word-break: break-word; background: #fafbfc; }
+  dialog { width: min(860px, 92vw); max-height: 85vh; border: 1px solid var(--border); border-radius: 10px; padding: 0; box-shadow: 0 20px 50px rgba(0,0,0,.15); }
+  dialog::backdrop { background: rgba(24,24,27,.35); }
+  dialog .head { position: sticky; top: 0; background: var(--surface); display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  dialog h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  dialog pre { margin: 0; padding: 16px; font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+
+  /* ---------- celular ---------- */
+  @media (max-width: 860px) {
+    .sidebar { position: fixed; left: 0; z-index: 20; transform: translateX(-100%); transition: transform .2s; box-shadow: 0 0 40px rgba(0,0,0,.12); }
+    .app.menu-open .sidebar { transform: none; }
+    .main { padding: 20px 16px 48px; }
+    .menu-btn { display: inline-flex; align-items: center; }
+    input.search { width: 100%; }
+  }
 </style>
 </head>
 <body>
-<div class="page">
-  <h1>DataCrazy</h1>
-  <p>Acervo com todos os dados da API e, abaixo, os relatórios gerados sob demanda. Clique numa linha de qualquer tabela para ver o JSON completo.</p>
-
-  <details class="acervo">
-    <summary>📚 Acervo – todos os dados da API</summary>
-    <div class="body" id="acervo"></div>
-  </details>
-
-  <h2 class="section">Relatórios</h2>
-  <div id="relatorios"></div>
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand"><strong>DataCrazy</strong><span>Relatórios e dados do CRM</span></div>
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-title"><span>Relatórios</span><span id="relCount"></span></div>
+        <div id="navRelatorios"></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title"><span>Acervo</span></div>
+        <div id="navAcervo"></div>
+      </div>
+    </nav>
+  </aside>
+  <main class="main" id="main"></main>
 </div>
 
 <dialog id="modal">
@@ -91,7 +130,7 @@ const date = v => v ? new Date(v).toLocaleString('pt-BR') : '';
 const day = v => v ? new Date(v).toLocaleDateString('pt-BR') : '';
 const money = v => v == null ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const num = v => v == null ? '' : Number(v).toLocaleString('pt-BR');
-const bool = v => v ? '<span class="yes">✔ sim</span>' : '<span class="no">✘ não</span>';
+const bool = v => v ? '<span class="yes">Sim</span>' : '<span class="no">Não</span>';
 const tags = arr => (arr || []).map(t => `<span class="tag" style="background:${esc(t.color || '#888')}">${esc(t.name)}</span>`).join('');
 const pill = (text, color) => text ? `<span class="tag" style="background:${esc(color || '#888')}">${esc(text)}</span>` : '';
 const color = v => v ? `<span class="swatch" style="background:${esc(v)}"></span>${esc(v)}` : '';
@@ -113,8 +152,8 @@ const api = {
       if (res.status === 429) { await sleep((Number(res.headers.get('Retry-After')) || 10) * 1000); continue; }
       const text = await res.text();
       let json;
-      try { json = JSON.parse(text); } catch { throw new Error(`Resposta não é JSON (HTTP ${res.status}). O server.js está rodando?`); }
-      if (!res.ok) throw new Error(json.message || JSON.stringify(json));
+      try { json = JSON.parse(text); } catch { throw new Error(`Resposta não é JSON (HTTP ${res.status}). O servidor está rodando?`); }
+      if (!res.ok) throw new Error(json.message || json.error || JSON.stringify(json));
       return json;
     }
     throw new Error('Limite de requisições da API atingido. Tente novamente em 1 minuto.');
@@ -147,7 +186,7 @@ document.addEventListener('click', e => {
   const tr = e.target.closest('tr[data-i]');
   if (!tr) return;
   const row = tableRows[tr.dataset.i];
-  $('modalTitle').textContent = row.name || row.lead?.name || row.id || 'Detalhes';
+  $('modalTitle').textContent = String(row.name || row.lead?.name || row.id || 'Detalhes').trim();
   $('modalBody').textContent = JSON.stringify(row, null, 2);
   $('modal').showModal();
 });
@@ -198,7 +237,7 @@ const ENDPOINTS = [
   { label: 'Produtos', path: '/products', columns: [
     ['Nome', r => esc(r.name)], ['SKU', r => esc(r.id_sku)], ['Preço', r => money(r.price)],
     ['Integração', r => esc(r.integration_slug)], ['Criado em', r => date(r.createdAt)] ] },
-  { label: 'Conexões (instâncias)', path: '/instances', columns: [
+  { label: 'Conexões', path: '/instances', columns: [
     ['Nome', r => esc(r.name)], ['Plataforma', r => badge(r.platform)], ['Provider', r => esc(r.provider)],
     ['Status', r => badge(r.status)], ['Ativa', r => bool(r.isActive)], ['Erro', r => esc(r.errorMessage)],
     ['Criada em', r => date(r.createdAt)] ] },
@@ -210,21 +249,27 @@ const ENDPOINTS = [
     ['Motivo', r => esc(r.name)], ['Exige justificativa', r => bool(r.requiredJustification)], ['Criado em', r => date(r.createdAt)] ] },
 ];
 
-ENDPOINTS.forEach(ep => {
-  const d = document.createElement('details');
-  d.innerHTML = `<summary><span class="sumtitle">${esc(ep.label)}</span><span class="sumhint">GET /api/v1${esc(ep.path)}</span></summary>
-    <div class="body">
-      <div class="toolbar">
-        <code class="url"></code>
-        ${ep.search ? '<input class="search" placeholder="Buscar...">' : ''}
-        ${ep.paginated ? `<select class="take"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
-          <button class="btn prev">← Anterior</button><button class="btn next">Próxima →</button>` : ''}
-        <button class="btn reload">Recarregar</button>
-      </div>
-      <div class="out"></div>
-    </div>`;
-  const q = s => d.querySelector(s);
-  const st = { skip: 0, loaded: false };
+const menuBtn = '<button class="btn menu-btn" data-menu>Menu</button>';
+
+// Cada item da sidebar tem uma "view" criada na primeira vez que é aberta e mantida depois
+// (trocar de item e voltar não busca os dados de novo).
+const views = {};
+
+function acervoView(ep) {
+  const v = document.createElement('section');
+  v.className = 'view';
+  v.innerHTML = `
+    <div class="view-head">${menuBtn}<div><h1>${esc(ep.label)}</h1><p><code class="url">GET /api/v1${esc(ep.path)}</code></p></div></div>
+    <div class="toolbar">
+      ${ep.search ? '<input class="search" placeholder="Buscar">' : ''}
+      <span class="grow"></span>
+      ${ep.paginated ? `<select class="take" title="Itens por página"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+        <button class="btn prev">Anterior</button><button class="btn next">Próxima</button>` : ''}
+      <button class="btn reload">Recarregar</button>
+    </div>
+    <div class="panel out"></div>`;
+  const q = s => v.querySelector(s);
+  const st = { skip: 0 };
 
   async function load() {
     const take = ep.paginated ? Number(q('.take').value) : null;
@@ -242,7 +287,7 @@ ENDPOINTS.forEach(ep => {
         q('.prev').disabled = st.skip === 0;
         q('.next').disabled = rows.length < take || (total != null && end >= total);
       }
-      const meta = ep.paginated ? `Mostrando ${rows.length ? st.skip + 1 : 0}–${end}` : `${rows.length} registro(s)`;
+      const meta = ep.paginated ? `${rows.length ? st.skip + 1 : 0}–${end}` : `${rows.length} registro(s)`;
       q('.out').innerHTML = `<div class="meta">${meta}${total != null ? ` de ${num(total)}` : ''}</div>` +
         table(ep.columns || autoColumns(rows), rows);
     } catch (err) {
@@ -250,8 +295,6 @@ ENDPOINTS.forEach(ep => {
     }
   }
 
-  // Só busca os dados quando o item é aberto pela primeira vez
-  d.addEventListener('toggle', () => { if (d.open && !st.loaded) { st.loaded = true; load(); } });
   q('.reload').onclick = load;
   if (ep.paginated) {
     q('.prev').onclick = () => { st.skip = Math.max(0, st.skip - Number(q('.take').value)); load(); };
@@ -262,45 +305,76 @@ ENDPOINTS.forEach(ep => {
     let t;
     q('.search').oninput = () => { clearTimeout(t); t = setTimeout(() => { st.skip = 0; load(); }, 400); };
   }
-  $('acervo').appendChild(d);
-});
-
-// ---------- RELATÓRIOS ----------
-const relatorios = [...(window.RELATORIOS || [])].reverse(); // mais recente primeiro
-if (!relatorios.length) {
-  $('relatorios').innerHTML = '<div class="empty">Nenhum relatório ainda. Peça um relatório ao Claude e ele aparecerá aqui.</div>';
+  load();
+  return v;
 }
-relatorios.forEach((rel, i) => {
-  const d = document.createElement('details');
-  d.className = 'report';
-  d.innerHTML = `<summary><span class="sumtitle">📊 ${esc(rel.titulo)}</span><span class="sumhint">criado em ${esc(rel.criadoEm)}</span>
-      ${rel.pedido ? `<span class="pedido">Pedido: “${esc(rel.pedido)}”</span>` : ''}</summary>
-    <div class="body">
-      <div class="toolbar"><code>${esc(rel.descricao || '')}</code><button class="btn reload">Atualizar</button></div>
-      <div class="out"></div>
-    </div>`;
-  const out = d.querySelector('.out');
-  let loaded = false;
+
+function relatorioView(rel) {
+  const v = document.createElement('section');
+  v.className = 'view';
+  v.innerHTML = `
+    <div class="view-head">${menuBtn}<div>
+      <h1>${esc(rel.titulo)}</h1>
+      <p>Criado em ${esc(rel.criadoEm)}${rel.descricao ? ` · <code>${esc(rel.descricao)}</code>` : ''}</p>
+      ${rel.pedido ? `<p class="pedido">Pedido: “${esc(rel.pedido)}”</p>` : ''}
+    </div><button class="btn reload">Atualizar</button></div>
+    <div class="out"></div>`;
+  const out = v.querySelector('.out');
 
   async function run() {
-    out.innerHTML = '<div class="empty">Gerando relatório com dados atuais da API...</div>';
+    out.innerHTML = '<div class="panel"><div class="empty">Gerando relatório com dados atuais da API...</div></div>';
     try {
       const r = await rel.gerar(api, fmt);
       const secoes = r.secoes || [{ colunas: r.colunas, linhas: r.linhas }];
       out.innerHTML =
-        (r.resumo?.length ? `<div class="cards">${r.resumo.map(c => `<div class="card"><div class="v">${c.valor}</div><div class="l">${esc(c.label)}</div></div>`).join('')}</div>` : '') +
-        secoes.map(s => (s.titulo ? `<h3 class="sec">${esc(s.titulo)}</h3>` : '') +
-          `<div class="meta">${s.linhas.length} registro(s)</div>` + table(s.colunas, s.linhas)).join('');
+        (r.resumo?.length ? `<div class="cards">${r.resumo.map(c => `<div class="card"><div class="l">${esc(c.label)}</div><div class="v">${c.valor}</div></div>`).join('')}</div>` : '') +
+        secoes.map(s => `<div class="secao">${s.titulo ? `<h3 class="sec">${esc(s.titulo)}</h3>` : ''}
+          <div class="panel"><div class="meta">${num(s.linhas.length)} registro(s)</div>${table(s.colunas, s.linhas)}</div></div>`).join('');
     } catch (err) {
-      out.innerHTML = `<div class="error">Erro: ${esc(err.message)}</div>`;
+      out.innerHTML = `<div class="panel"><div class="error">Erro: ${esc(err.message)}</div></div>`;
     }
   }
 
-  d.addEventListener('toggle', () => { if (d.open && !loaded) { loaded = true; run(); } });
-  d.querySelector('.reload').onclick = run;
-  if (i === 0) d.open = true; // o relatório mais recente já abre
-  $('relatorios').appendChild(d);
-});
+  v.querySelector('.reload').onclick = run;
+  run();
+  return v;
+}
+
+// ---------- SIDEBAR + navegação por #hash ----------
+const relatorios = [...(window.RELATORIOS || [])].reverse(); // mais recente primeiro
+const rotas = {};
+relatorios.forEach(rel => { rotas['rel/' + rel.id] = () => relatorioView(rel); });
+ENDPOINTS.forEach(ep => { rotas['acervo' + ep.path] = () => acervoView(ep); });
+
+$('relCount').textContent = relatorios.length || '';
+$('navRelatorios').innerHTML = relatorios.length
+  ? relatorios.map(r => `<a href="#rel/${encodeURIComponent(r.id)}" data-rota="rel/${esc(r.id)}">${esc(r.titulo)}<small>${esc(r.criadoEm)}</small></a>`).join('')
+  : '<div class="none">Nenhum relatório ainda</div>';
+$('navAcervo').innerHTML = ENDPOINTS.map(ep => `<a href="#acervo${ep.path}" data-rota="acervo${ep.path}">${esc(ep.label)}</a>`).join('');
+
+function abrir() {
+  let rota = decodeURIComponent(location.hash.slice(1));
+  if (!rotas[rota]) rota = relatorios.length ? 'rel/' + relatorios[0].id : null;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.rota === rota));
+  Object.values(views).forEach(v => { v.hidden = true; });
+  $('app').classList.remove('menu-open');
+  if (!rota) {
+    if (!views.inicio) {
+      views.inicio = document.createElement('section');
+      views.inicio.className = 'view';
+      views.inicio.innerHTML = `<div class="view-head">${menuBtn}</div><div class="welcome"><h1>Nenhum relatório ainda</h1>Os relatórios pedidos aparecem aqui. Use o Acervo na lateral para consultar os dados da API.</div>`;
+      $('main').appendChild(views.inicio);
+    }
+    views.inicio.hidden = false;
+    return;
+  }
+  if (!views[rota]) { views[rota] = rotas[rota](); $('main').appendChild(views[rota]); }
+  views[rota].hidden = false;
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', abrir);
+document.addEventListener('click', e => { if (e.target.closest('[data-menu]')) $('app').classList.toggle('menu-open'); });
+abrir();
 </script>
 </body>
 </html>

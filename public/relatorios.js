@@ -1,7 +1,7 @@
 // =====================================================================
 // RELATÓRIOS SOB DEMANDA
 // Cada pedido de relatório vira um item RELATORIOS.push({...}) no FIM deste arquivo.
-// A página mostra o mais recente primeiro, abaixo do Acervo.
+// A página mostra o mais recente primeiro, no topo da sidebar.
 // Regras completas: .claude/skills/relatorio-datacrazy/SKILL.md
 //
 // Formato:

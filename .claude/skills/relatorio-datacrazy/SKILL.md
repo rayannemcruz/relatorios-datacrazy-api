@@ -1,16 +1,16 @@
 ---
 name: relatorio-datacrazy
-description: Gera um novo relatório sob demanda no site do DataCrazy deste projeto. Use SEMPRE que o usuário pedir um relatório, levantamento, lista, contagem ou cruzamento de dados do CRM DataCrazy (ex.: "leads da atendente X", "negócios ganhos em outubro", "conversas abertas no Instagram", "quanto a Ana vendeu"). O relatório é adicionado em public/relatorios.js e aparece no site abaixo do Acervo.
+description: Gera um novo relatório sob demanda no site do DataCrazy deste projeto. Use SEMPRE que o usuário pedir um relatório, levantamento, lista, contagem ou cruzamento de dados do CRM DataCrazy (ex.: "leads da atendente X", "negócios ganhos em outubro", "conversas abertas no Instagram", "quanto a Ana vendeu"). O relatório é adicionado em public/relatorios.js e aparece no site, no topo da sidebar em Relatórios.
 ---
 
 # Relatórios sob demanda – DataCrazy
 
 ## Como o site é organizado (não mudar sem o usuário pedir)
 
-A página `public/index.html` tem duas partes, uma embaixo da outra:
+A página `public/index.html` tem uma **sidebar** à esquerda e o conteúdo à direita. Visual limpo e **sem emojis** (inclusive em títulos de relatório e rótulos).
 
-1. **Acervo** (topo): um bloco colapsado com TODOS os endpoints de listagem da API (leads, negócios, pipelines, conversas, atividades, tags, listas, produtos, conexões, atendentes multi/CRM, motivos de perda). Cada endpoint é outro bloco colapsado que só busca os dados quando é aberto. **O Acervo é fixo**: não acrescente relatórios nele e não o altere ao criar relatórios.
-2. **Relatórios** (abaixo do Acervo): um bloco colapsável por relatório pedido pelo usuário. O mais recente aparece primeiro e já vem aberto. Cada relatório busca os dados **ao vivo** na API quando é aberto e tem um botão "Atualizar".
+1. **Relatórios** (primeiro grupo da sidebar): um item por relatório pedido pelo usuário, o mais recente no topo. Ao abrir o site, o relatório mais recente já aparece. Cada relatório busca os dados **ao vivo** na API quando é aberto e tem um botão "Atualizar". Link direto: `#rel/<id>`.
+2. **Acervo** (segundo grupo da sidebar): TODOS os endpoints de listagem da API (leads, negócios, pipelines, conversas, atividades, tags, listas, produtos, conexões, atendentes multi/CRM, motivos de perda). Cada um só busca os dados quando é aberto. **O Acervo é fixo**: não acrescente relatórios nele e não o altere ao criar relatórios.
 
 Arquivos:
 
@@ -113,7 +113,7 @@ Se o push falhar (login/permissão), avise o usuário com o erro. Não use `--fo
 
 ### 5. Responder ao usuário
 Curto, em português:
-- Nome do relatório e onde ele está ("abaixo do Acervo, já aberto").
+- Nome do relatório e onde ele está ("no topo da sidebar, em Relatórios").
 - Os números principais do teste (ex.: "17 negócios, 3 ganhos, R$ 4.500").
 - Como os dados foram filtrados (endpoint e filtro, em linguagem simples) e qualquer premissa assumida (período padrão, nome interpretado).
 - Que já foi publicado: em cerca de 1 minuto aparece no site da Vercel (recarregar com F5). Os dados são sempre buscados ao vivo.
