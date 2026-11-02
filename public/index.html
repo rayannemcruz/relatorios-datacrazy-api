@@ -82,8 +82,8 @@
 </dialog>
 
 <script>
-// Se a página for aberta pelo server.js usa o mesmo endereço; senão (Live Server, arquivo local) aponta para ele
-const API_URL = location.port === '3000' ? '/api' : 'http://localhost:3000/api';
+// Local com outro servidor (ex.: Live Server na 5500) usa o server.js na 3000; no server.js e na Vercel usa /api.
+const API_URL = ['localhost', '127.0.0.1', ''].includes(location.hostname) && location.port !== '3000' ? 'http://localhost:3000/api' : '/api';
 
 // ---------- helpers de formatação (também usados pelos relatórios) ----------
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

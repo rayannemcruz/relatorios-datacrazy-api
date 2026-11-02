@@ -18,7 +18,8 @@ Arquivos:
 |---|---|
 | `public/relatorios.js` | **Único arquivo que você edita para criar um relatório.** Cada relatório é um `RELATORIOS.push({...})` no fim do arquivo. |
 | `public/index.html` | Acervo, motor dos relatórios e helpers `api`/`fmt`. Só mexa se um relatório precisar de um helper novo. |
-| `server.js` | Proxy (somente GET) que injeta o token. Porta 3000. Não mexa. |
+| `server.js` | Proxy local (somente GET) que injeta o token. Porta 3000. Não mexa. |
+| `api/proxy.js`, `vercel.json`, `middleware.js` | Versão do site na Vercel: proxy serverless, rotas e senha de acesso (`SITE_USUARIO`/`SITE_SENHA`). Não mexa. |
 | `scripts/testar-relatorio.js` | Roda um relatório no terminal contra a API real, para validar. |
 | `.env` | Token da API. **Nunca** exiba, copie para outro arquivo nem coloque no front-end. |
 
@@ -101,12 +102,21 @@ Helpers disponíveis:
 3. Confira se faz sentido: o filtro pegou só o que devia? (ex.: todas as linhas são do atendente pedido?) Os números batem com uma consulta direta? Se der zero linhas, investigue antes de entregar. Pode ser filtro errado ou nome de parâmetro errado (ver "Pegadinhas").
 4. Confira a sintaxe com `node --check public/relatorios.js`.
 
-### 4. Responder ao usuário
+### 4. Publicar no site (Vercel)
+O site no ar é publicado automaticamente pela Vercel a cada push na branch `main` do GitHub. Depois do teste OK:
+```bash
+git add public/relatorios.js   # e public/index.html, se precisou de helper novo
+git commit -m "Relatório: <titulo>"
+git push origin main
+```
+Se o push falhar (login/permissão), avise o usuário com o erro. Não use `--force`.
+
+### 5. Responder ao usuário
 Curto, em português:
 - Nome do relatório e onde ele está ("abaixo do Acervo, já aberto").
 - Os números principais do teste (ex.: "17 negócios, 3 ganhos, R$ 4.500").
 - Como os dados foram filtrados (endpoint e filtro, em linguagem simples) e qualquer premissa assumida (período padrão, nome interpretado).
-- Lembrete: recarregar a página (F5). Os dados são sempre buscados ao vivo.
+- Que já foi publicado: em cerca de 1 minuto aparece no site da Vercel (recarregar com F5). Os dados são sempre buscados ao vivo.
 
 ## Referência da API (verificada em 02/11/2026)
 

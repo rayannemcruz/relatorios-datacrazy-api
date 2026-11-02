@@ -10,7 +10,7 @@ const html = fs.readFileSync(path.join(root, 'public', 'index.html'), 'utf8');
 const helpers = html.match(/<script>([\s\S]*?)<\/script>/)[1]; // 1º <script>: fmt + api
 
 globalThis.window = globalThis;
-globalThis.location = { port: 'node' }; // força API_URL = http://localhost:3000/api
+globalThis.location = { hostname: 'localhost', port: 'node' }; // força API_URL = http://localhost:3000/api
 globalThis.document = { addEventListener() {}, getElementById() {} };
 vm.runInThisContext(helpers + ';globalThis.api = api; globalThis.fmt = fmt;');
 vm.runInThisContext(fs.readFileSync(path.join(root, 'public', 'relatorios.js'), 'utf8'));
