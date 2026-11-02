@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataCrazy – Acervo e Relatórios</title>
+<link rel="icon" href="data:,">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f4f5f7; color: #1f2328; }
+  .page { max-width: 1400px; margin: 0 auto; padding: 24px 20px 60px; }
+  .page > h1 { font-size: 22px; margin: 0 0 4px; }
+  .page > p { margin: 0 0 24px; color: #6b7280; font-size: 14px; }
+  h2.section { font-size: 15px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin: 32px 0 10px; }
+
+  details { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; margin-bottom: 10px; }
+  details > summary { list-style: none; cursor: pointer; padding: 14px 18px; display: flex; align-items: center; gap: 10px; user-select: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: '▸'; color: #6b7280; transition: transform .15s; }
+  details[open] > summary::before { transform: rotate(90deg); }
+  details > summary:hover { background: #fafbfc; border-radius: 10px; }
+  .body { padding: 0 18px 18px; }
+
+  details.acervo { border: 2px solid #4f46e5; }
+  details.acervo > summary { font-size: 17px; font-weight: 600; }
+  details.acervo details { margin: 0 0 8px; }
+  details.acervo details > summary { font-weight: 500; }
+  details.report > summary { flex-wrap: wrap; }
+  .sumtitle { font-weight: 600; }
+  .sumhint { font-size: 12px; color: #6b7280; font-weight: normal; margin-left: auto; }
+  .pedido { flex-basis: 100%; font-size: 13px; color: #6b7280; padding-left: 20px; font-style: italic; }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .toolbar code { font-size: 12px; color: #6b7280; margin-right: auto; }
+  input, select { padding: 6px 9px; border: 1px solid #d0d4da; border-radius: 6px; font-size: 13px; }
+  .btn { padding: 6px 11px; border: 1px solid #d0d4da; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .meta { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+
+  .cards { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .card { background: #f8f9fb; border: 1px solid #eef0f2; border-radius: 8px; padding: 10px 14px; min-width: 140px; }
+  .card .v { font-size: 20px; font-weight: 600; }
+  .card .l { font-size: 12px; color: #6b7280; }
+  h3.sec { font-size: 14px; margin: 18px 0 8px; }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eef0f2; vertical-align: top; }
+  th { background: #f8f9fb; font-weight: 600; white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #f5f5ff; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #fff; margin: 1px 2px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #eef0f2; }
+  .yes { color: #16a34a; } .no { color: #9ca3af; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; border: 1px solid #0002; }
+  .empty, .error { padding: 24px; text-align: center; color: #6b7280; }
+  .error { color: #b91c1c; }
+
+  dialog { width: min(900px, 92vw); max-height: 85vh; border: 0; border-radius: 10px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  dialog .head { position: sticky; top: 0; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #e3e5e8; }
+  dialog h2 { margin: 0; font-size: 16px; }
+  dialog pre { margin: 0; padding: 16px 18px; font-size: 12px; white-space: pre-wrap; word-break: break-word; background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>DataCrazy</h1>
+  <p>Acervo com todos os dados da API e, abaixo, os relatórios gerados sob demanda. Clique numa linha de qualquer tabela para ver o JSON completo.</p>
+
+  <details class="acervo">
+    <summary>📚 Acervo – todos os dados da API</summary>
+    <div class="body" id="acervo"></div>
+  </details>
+
+  <h2 class="section">Relatórios</h2>
+  <div id="relatorios"></div>
+</div>
+
+<dialog id="modal">
+  <div class="head"><h2 id="modalTitle">Detalhes</h2><button class="btn" onclick="modal.close()">Fechar</button></div>
+  <pre id="modalBody"></pre>
+</dialog>
+
+<script>
+// Se a página for aberta pelo server.js usa o mesmo endereço; senão (Live Server, arquivo local) aponta para ele
+const API_URL = location.port === '3000' ? '/api' : 'http://localhost:3000/api';
+
+// ---------- helpers de formatação (também usados pelos relatórios) ----------
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const date = v => v ? new Date(v).toLocaleString('pt-BR') : '';
+const day = v => v ? new Date(v).toLocaleDateString('pt-BR') : '';
+const money = v => v == null ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const num = v => v == null ? '' : Number(v).toLocaleString('pt-BR');
+const bool = v => v ? '<span class="yes">✔ sim</span>' : '<span class="no">✘ não</span>';
+const tags = arr => (arr || []).map(t => `<span class="tag" style="background:${esc(t.color || '#888')}">${esc(t.name)}</span>`).join('');
+const pill = (text, color) => text ? `<span class="tag" style="background:${esc(color || '#888')}">${esc(text)}</span>` : '';
+const color = v => v ? `<span class="swatch" style="background:${esc(v)}"></span>${esc(v)}` : '';
+const badge = v => v ? `<span class="badge">${esc(v)}</span>` : '';
+const STATUS_NEGOCIO = { in_process: 'Em andamento', won: 'Ganho', lost: 'Perdido' };
+const status = v => badge(STATUS_NEGOCIO[v] || v);
+const fmt = { esc, date, day, money, num, bool, tags, pill, color, badge, status };
+
+// ---------- cliente da API (também usado pelos relatórios) ----------
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const api = {
+  // GET simples. params: objeto { take: 10, 'filter[status]': 'won' }
+  async get(path, params = {}) {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null)).toString();
+    for (let tentativa = 0; tentativa < 4; tentativa++) {
+      let res;
+      try { res = await fetch(API_URL + path + (qs ? '?' + qs : '')); }
+      catch { throw new Error(`Não foi possível conectar em ${API_URL}. Rode "npm start" na pasta do projeto.`); }
+      if (res.status === 429) { await sleep((Number(res.headers.get('Retry-After')) || 10) * 1000); continue; }
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); } catch { throw new Error(`Resposta não é JSON (HTTP ${res.status}). O server.js está rodando?`); }
+      if (!res.ok) throw new Error(json.message || JSON.stringify(json));
+      return json;
+    }
+    throw new Error('Limite de requisições da API atingido. Tente novamente em 1 minuto.');
+  },
+  // Busca todas as páginas (skip/take) até acabar ou chegar em `max` registros
+  async getAll(path, params = {}, { max = 5000, pageSize = 500 } = {}) {
+    const rows = [];
+    for (let skip = 0; rows.length < max && skip <= 10000; skip += pageSize) {
+      const json = await api.get(path, { ...params, skip, take: pageSize });
+      const page = Array.isArray(json) ? json : (json.data || []);
+      rows.push(...page);
+      if (page.length < pageSize) break;
+    }
+    return rows.slice(0, max);
+  },
+};
+
+// ---------- tabela + modal de JSON ----------
+const tableRows = [];
+function table(cols, rows) {
+  if (!rows.length) return '<div class="empty">Nenhum registro.</div>';
+  const base = tableRows.length;
+  tableRows.push(...rows);
+  return `<div class="tablewrap"><table>
+    <thead><tr>${cols.map(c => `<th>${esc(c[0])}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map((r, i) => `<tr data-i="${base + i}">${cols.map(c => `<td>${c[1](r) ?? ''}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>`;
+}
+document.addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-i]');
+  if (!tr) return;
+  const row = tableRows[tr.dataset.i];
+  $('modalTitle').textContent = row.name || row.lead?.name || row.id || 'Detalhes';
+  $('modalBody').textContent = JSON.stringify(row, null, 2);
+  $('modal').showModal();
+});
+
+// Colunas genéricas para endpoints sem configuração
+function autoColumns(rows) {
+  const keys = [...new Set(rows.flatMap(r => Object.keys(r)))]
+    .filter(k => rows.some(r => r[k] == null || typeof r[k] !== 'object' || r[k]?.name));
+  return keys.slice(0, 10).map(k => [k, r => {
+    const v = r[k];
+    if (v && typeof v === 'object') return esc(v.name ?? JSON.stringify(v));
+    if (typeof v === 'boolean') return bool(v);
+    if (/At$/.test(k)) return date(v);
+    return esc(v);
+  }]);
+}
+
+const $ = id => document.getElementById(id);
+</script>
+
+<!-- Relatórios gerados sob demanda (ver .claude/skills/relatorio-datacrazy/SKILL.md) -->
+<script src="relatorios.js"></script>
+
+<script>
+// ---------- ACERVO ----------
+// paginated: aceita skip/take | search: aceita ?search=
+const ENDPOINTS = [
+  { label: 'Leads', path: '/leads', paginated: true, search: true, columns: [
+    ['Nome', r => esc(r.name)], ['Telefone', r => esc(r.phone)], ['E-mail', r => esc(r.email)],
+    ['Tags', r => tags(r.tags)], ['Tipo', r => badge(r.type)], ['Atendente', r => esc(r.attendant?.name)],
+    ['Criado em', r => date(r.createdAt)] ] },
+  { label: 'Negócios', path: '/businesses', paginated: true, search: true, columns: [
+    ['Código', r => esc(r.code)], ['Lead', r => esc(r.lead?.name)], ['Pipeline', r => esc(r.stage?.pipeline?.name)],
+    ['Etapa', r => pill(r.stage?.name, r.stage?.color)], ['Status', r => status(r.status)], ['Total', r => money(r.total)],
+    ['Produtos', r => esc(r.productsCount)], ['Atendente', r => esc(r.attendant?.name)], ['Criado em', r => date(r.createdAt)] ] },
+  { label: 'Pipelines', path: '/pipelines', search: true, columns: [
+    ['Nome', r => esc(r.name)], ['Descrição', r => esc(r.description)], ['Grupo', r => esc(r.group)],
+    ['Etapas', r => esc(r.stagesCount)], ['Atualizado em', r => date(r.updatedAt)] ] },
+  { label: 'Conversas', path: '/conversations', paginated: true, search: true, columns: [
+    ['Nome', r => esc(r.name)], ['Canal', r => badge(r.instance?.platform)], ['Conexão', r => esc(r.instance?.name)],
+    ['Departamento', r => esc(r.currentDepartment?.name)], ['Atendentes', r => esc((r.attendants || []).map(a => a.name).join(', '))],
+    ['Última mensagem', r => esc((r.lastMessage?.body || '').slice(0, 80))], ['Data', r => date(r.lastMessageDate)],
+    ['Finalizada', r => bool(r.finished)] ] },
+  { label: 'Atividades', path: '/activities', paginated: true, search: true, columns: null },
+  { label: 'Tags', path: '/tags', columns: [
+    ['Nome', r => pill(r.name, r.color)], ['Cor', r => color(r.color)], ['Descrição', r => esc(r.description)], ['Criada em', r => date(r.createdAt)] ] },
+  { label: 'Listas', path: '/lists', columns: null },
+  { label: 'Produtos', path: '/products', columns: [
+    ['Nome', r => esc(r.name)], ['SKU', r => esc(r.id_sku)], ['Preço', r => money(r.price)],
+    ['Integração', r => esc(r.integration_slug)], ['Criado em', r => date(r.createdAt)] ] },
+  { label: 'Conexões (instâncias)', path: '/instances', columns: [
+    ['Nome', r => esc(r.name)], ['Plataforma', r => badge(r.platform)], ['Provider', r => esc(r.provider)],
+    ['Status', r => badge(r.status)], ['Ativa', r => bool(r.isActive)], ['Erro', r => esc(r.errorMessage)],
+    ['Criada em', r => date(r.createdAt)] ] },
+  { label: 'Atendentes (multiatendimento)', path: '/attendants/multi', search: true, columns: [
+    ['Nome', r => esc(r.name)], ['E-mail', r => esc(r.email)], ['Telefone', r => esc(r.phone)], ['Agente IA', r => bool(r.isAgent)] ] },
+  { label: 'Atendentes (CRM)', path: '/attendants/crm', columns: [
+    ['Nome', r => esc(r.name)], ['E-mail', r => esc(r.email)], ['Telefone', r => esc(r.phone)] ] },
+  { label: 'Motivos de perda', path: '/business-loss-reasons', columns: [
+    ['Motivo', r => esc(r.name)], ['Exige justificativa', r => bool(r.requiredJustification)], ['Criado em', r => date(r.createdAt)] ] },
+];
+
+ENDPOINTS.forEach(ep => {
+  const d = document.createElement('details');
+  d.innerHTML = `<summary><span class="sumtitle">${esc(ep.label)}</span><span class="sumhint">GET /api/v1${esc(ep.path)}</span></summary>
+    <div class="body">
+      <div class="toolbar">
+        <code class="url"></code>
+        ${ep.search ? '<input class="search" placeholder="Buscar...">' : ''}
+        ${ep.paginated ? `<select class="take"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+          <button class="btn prev">← Anterior</button><button class="btn next">Próxima →</button>` : ''}
+        <button class="btn reload">Recarregar</button>
+      </div>
+      <div class="out"></div>
+    </div>`;
+  const q = s => d.querySelector(s);
+  const st = { skip: 0, loaded: false };
+
+  async function load() {
+    const take = ep.paginated ? Number(q('.take').value) : null;
+    const params = ep.paginated ? { skip: st.skip, take } : {};
+    if (ep.search && q('.search').value) params.search = q('.search').value;
+    const qs = new URLSearchParams(params).toString();
+    q('.url').textContent = `GET /api/v1${ep.path}${qs ? '?' + qs : ''}`;
+    q('.out').innerHTML = '<div class="empty">Carregando...</div>';
+    try {
+      const json = await api.get(ep.path, params);
+      const rows = Array.isArray(json) ? json : (json.data || []);
+      const total = json.count;
+      const end = ep.paginated ? st.skip + rows.length : rows.length;
+      if (ep.paginated) {
+        q('.prev').disabled = st.skip === 0;
+        q('.next').disabled = rows.length < take || (total != null && end >= total);
+      }
+      const meta = ep.paginated ? `Mostrando ${rows.length ? st.skip + 1 : 0}–${end}` : `${rows.length} registro(s)`;
+      q('.out').innerHTML = `<div class="meta">${meta}${total != null ? ` de ${num(total)}` : ''}</div>` +
+        table(ep.columns || autoColumns(rows), rows);
+    } catch (err) {
+      q('.out').innerHTML = `<div class="error">Erro: ${esc(err.message)}</div>`;
+    }
+  }
+
+  // Só busca os dados quando o item é aberto pela primeira vez
+  d.addEventListener('toggle', () => { if (d.open && !st.loaded) { st.loaded = true; load(); } });
+  q('.reload').onclick = load;
+  if (ep.paginated) {
+    q('.prev').onclick = () => { st.skip = Math.max(0, st.skip - Number(q('.take').value)); load(); };
+    q('.next').onclick = () => { st.skip += Number(q('.take').value); load(); };
+    q('.take').onchange = () => { st.skip = 0; load(); };
+  }
+  if (ep.search) {
+    let t;
+    q('.search').oninput = () => { clearTimeout(t); t = setTimeout(() => { st.skip = 0; load(); }, 400); };
+  }
+  $('acervo').appendChild(d);
+});
+
+// ---------- RELATÓRIOS ----------
+const relatorios = [...(window.RELATORIOS || [])].reverse(); // mais recente primeiro
+if (!relatorios.length) {
+  $('relatorios').innerHTML = '<div class="empty">Nenhum relatório ainda. Peça um relatório ao Claude e ele aparecerá aqui.</div>';
+}
+relatorios.forEach((rel, i) => {
+  const d = document.createElement('details');
+  d.className = 'report';
+  d.innerHTML = `<summary><span class="sumtitle">📊 ${esc(rel.titulo)}</span><span class="sumhint">criado em ${esc(rel.criadoEm)}</span>
+      ${rel.pedido ? `<span class="pedido">Pedido: “${esc(rel.pedido)}”</span>` : ''}</summary>
+    <div class="body">
+      <div class="toolbar"><code>${esc(rel.descricao || '')}</code><button class="btn reload">Atualizar</button></div>
+      <div class="out"></div>
+    </div>`;
+  const out = d.querySelector('.out');
+  let loaded = false;
+
+  async function run() {
+    out.innerHTML = '<div class="empty">Gerando relatório com dados atuais da API...</div>';
+    try {
+      const r = await rel.gerar(api, fmt);
+      const secoes = r.secoes || [{ colunas: r.colunas, linhas: r.linhas }];
+      out.innerHTML =
+        (r.resumo?.length ? `<div class="cards">${r.resumo.map(c => `<div class="card"><div class="v">${c.valor}</div><div class="l">${esc(c.label)}</div></div>`).join('')}</div>` : '') +
+        secoes.map(s => (s.titulo ? `<h3 class="sec">${esc(s.titulo)}</h3>` : '') +
+          `<div class="meta">${s.linhas.length} registro(s)</div>` + table(s.colunas, s.linhas)).join('');
+    } catch (err) {
+      out.innerHTML = `<div class="error">Erro: ${esc(err.message)}</div>`;
+    }
+  }
+
+  d.addEventListener('toggle', () => { if (d.open && !loaded) { loaded = true; run(); } });
+  d.querySelector('.reload').onclick = run;
+  if (i === 0) d.open = true; // o relatório mais recente já abre
+  $('relatorios').appendChild(d);
+});
+</script>
+</body>
+</html>
