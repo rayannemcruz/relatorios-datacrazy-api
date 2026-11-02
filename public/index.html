@@ -43,9 +43,6 @@
   .nav-group.collapsed > .nav-toggle .chev { transform: rotate(-45deg); margin-bottom: 0; }
   .nav-group.collapsed > .nav-items { display: none; }
   .nav-sub { margin-bottom: 2px; }
-  .side-foot { margin-top: auto; padding: 12px 20px 16px; border-top: 1px solid var(--border-soft); }
-  .side-foot[hidden] { display: none; }
-  .side-foot .btn { width: 100%; color: var(--muted); }
   .nav-sub > .nav-items { padding-left: 10px; margin: 2px 0 6px 10px; border-left: 1px solid var(--border-soft); }
 
   .main { flex: 1; min-width: 0; padding: 32px 40px 64px; }
@@ -126,9 +123,6 @@
         <div id="navAcervo" class="nav-items"></div>
       </div>
     </nav>
-    <div class="side-foot" id="sideFoot" hidden>
-      <button class="btn" id="btnSair">Sair</button>
-    </div>
   </aside>
   <main class="main" id="main"></main>
 </div>
@@ -426,19 +420,6 @@ function abrir() {
 }
 window.addEventListener('hashchange', abrir);
 document.addEventListener('click', e => { if (e.target.closest('[data-menu]')) $('app').classList.toggle('menu-open'); });
-
-// Sair (só na Vercel, onde há senha): o navegador guarda o login do Basic Auth.
-// Para "esquecê-lo", fazemos uma requisição a /sair com um usuário falso que o middleware aceita;
-// o navegador troca o login guardado por esse, e ao voltar para / a senha é pedida de novo.
-if (!['localhost', '127.0.0.1', ''].includes(location.hostname)) {
-  $('sideFoot').hidden = false;
-  $('btnSair').onclick = () => {
-    const x = new XMLHttpRequest();
-    x.open('GET', '/sair?' + Date.now(), true, 'sair', 'sair');
-    x.onloadend = () => { location.href = '/'; };
-    x.send();
-  };
-}
 abrir();
 </script>
 </body>

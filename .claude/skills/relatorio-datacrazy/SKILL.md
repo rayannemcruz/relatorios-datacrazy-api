@@ -19,7 +19,7 @@ Arquivos:
 | `public/relatorios.js` | **Único arquivo que você edita para criar um relatório.** Cada relatório é um `RELATORIOS.push({...})` no fim do arquivo. |
 | `public/index.html` | Acervo, motor dos relatórios e helpers `api`/`fmt`. Só mexa se um relatório precisar de um helper novo. |
 | `server.js` | Proxy local (somente GET) que injeta o token. Porta 3000. Não mexa. |
-| `api/proxy.js`, `vercel.json`, `middleware.js` | Versão do site na Vercel: proxy serverless, rotas e senha de acesso (`SITE_USUARIO`/`SITE_SENHA`). Não mexa. |
+| `api/proxy.js`, `vercel.json` | Versão do site na Vercel: proxy serverless e rotas. Não mexa. |
 | `scripts/testar-relatorio.js` | Roda um relatório no terminal contra a API real, para validar. |
 | `.env` | Token da API. **Nunca** exiba, copie para outro arquivo nem coloque no front-end. |
 
