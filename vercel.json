@@ -1,6 +1,6 @@
 {
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/proxy?__path=:path*" }
+    { "source": "/api/:path((?!proxy$).*)", "destination": "/api/proxy?__path=:path" }
   ]
 }

@@ -14,8 +14,12 @@ module.exports = async (req, res) => {
     return;
   }
   const url = new URL(req.url, 'http://x');
-  const caminho = url.searchParams.get('__path') || '';
+  // A Vercel também repassa o parâmetro nomeado da regra ("path"); ignoramos "proxy"
+  // caso a função acabe reescrita para ela mesma.
+  const candidatos = [...url.searchParams.getAll('__path'), ...url.searchParams.getAll('path')];
+  const caminho = (candidatos.find(c => c && c !== 'proxy') || '').replace(/^\/+/, '');
   url.searchParams.delete('__path');
+  url.searchParams.delete('path');
   const qs = url.searchParams.toString();
   try {
     const r = await fetch(`${API_BASE}/${caminho}${qs ? '?' + qs : ''}`, {
