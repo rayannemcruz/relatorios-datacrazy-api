@@ -32,11 +32,18 @@
   .nav a small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; }
   .nav a.active small { color: var(--accent); opacity: .75; }
   .nav .none { font-size: 12.5px; color: var(--faint); padding: 4px 10px; }
-  button.nav-title { width: 100%; background: none; border: 0; cursor: pointer; align-items: center; text-align: left; font-size: 11px; color: var(--faint); }
+  .nav-toggle { width: 100%; background: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+  button.nav-title { font-size: 11px; color: var(--faint); }
   button.nav-title:hover { color: var(--muted); }
-  .chev { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-right: 4px; transition: transform .15s; }
-  .nav-group.collapsed .chev { transform: rotate(-45deg); }
-  .nav-group.collapsed .nav-items { display: none; }
+  .nav-month { padding: 6px 10px; font-size: 12.5px; font-weight: 500; color: var(--text); border-radius: 6px; }
+  .nav-month:hover { background: var(--bg); }
+  .nav-toggle .right { display: flex; align-items: center; gap: 8px; }
+  .nav-toggle .count { font-size: 11px; color: var(--faint); font-weight: 500; }
+  .chev { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin: 0 4px 3px 0; transition: transform .15s; color: var(--faint); }
+  .nav-group.collapsed > .nav-toggle .chev { transform: rotate(-45deg); margin-bottom: 0; }
+  .nav-group.collapsed > .nav-items { display: none; }
+  .nav-sub { margin-bottom: 2px; }
+  .nav-sub > .nav-items { padding-left: 10px; margin: 2px 0 6px 10px; border-left: 1px solid var(--border-soft); }
 
   .main { flex: 1; min-width: 0; padding: 32px 40px 64px; }
   .view { max-width: 1280px; }
@@ -107,12 +114,12 @@
   <aside class="sidebar">
     <div class="brand"><strong>DataCrazy</strong><span>Relatórios e dados do CRM</span></div>
     <nav class="nav">
-      <div class="nav-group">
-        <div class="nav-title"><span>Relatórios</span><span id="relCount"></span></div>
-        <div id="navRelatorios"></div>
+      <div class="nav-group" data-key="relatorios">
+        <button class="nav-title nav-toggle"><span>Relatórios</span><span class="right"><span class="count" id="relCount"></span><span class="chev"></span></span></button>
+        <div id="navRelatorios" class="nav-items"></div>
       </div>
-      <div class="nav-group">
-        <button class="nav-title" id="acervoToggle" aria-expanded="true"><span>Acervo</span><span class="chev"></span></button>
+      <div class="nav-group" data-key="acervo">
+        <button class="nav-title nav-toggle"><span>Acervo</span><span class="right"><span class="chev"></span></span></button>
         <div id="navAcervo" class="nav-items"></div>
       </div>
     </nav>
@@ -351,26 +358,50 @@ const rotas = {};
 relatorios.forEach(rel => { rotas['rel/' + rel.id] = () => relatorioView(rel); });
 ENDPOINTS.forEach(ep => { rotas['acervo' + ep.path] = () => acervoView(ep); });
 
+// Relatórios agrupados por mês de criação (criadoEm DD/MM/AAAA), mês mais recente primeiro
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const porMes = new Map();
+relatorios.forEach(r => {
+  const [, m, a] = String(r.criadoEm || '').split('/').map(Number);
+  const chave = a && m ? `${a}-${String(m).padStart(2, '0')}` : 'sem-data';
+  if (!porMes.has(chave)) porMes.set(chave, { titulo: a && m ? `${MESES[m - 1]} ${a}` : 'Sem data', itens: [] });
+  porMes.get(chave).itens.push(r);
+});
+const meses = [...porMes.entries()].sort((x, y) => y[0].localeCompare(x[0]));
+const diaDe = r => Number(String(r.criadoEm || '').split('/')[0]) || 0;
+meses.forEach(([, mes]) => mes.itens.sort((x, y) => diaDe(y) - diaDe(x))); // dia mais recente primeiro (empate: último criado primeiro)
+
 $('relCount').textContent = relatorios.length || '';
 $('navRelatorios').innerHTML = relatorios.length
-  ? relatorios.map(r => `<a href="#rel/${encodeURIComponent(r.id)}" data-rota="rel/${esc(r.id)}">${esc(r.titulo)}<small>${esc(r.criadoEm)}</small></a>`).join('')
+  ? meses.map(([chave, mes], i) => `
+    <div class="nav-group nav-sub" data-key="mes-${chave}" data-padrao="${i === 0 ? 'aberto' : 'fechado'}">
+      <button class="nav-month nav-toggle"><span>${esc(mes.titulo)}</span><span class="right"><span class="count">${mes.itens.length}</span><span class="chev"></span></span></button>
+      <div class="nav-items">${mes.itens.map(r => `<a href="#rel/${encodeURIComponent(r.id)}" data-rota="rel/${esc(r.id)}">${esc(r.titulo)}<small>${esc(r.criadoEm)}</small></a>`).join('')}</div>
+    </div>`).join('')
   : '<div class="none">Nenhum relatório ainda</div>';
 $('navAcervo').innerHTML = ENDPOINTS.map(ep => `<a href="#acervo${ep.path}" data-rota="acervo${ep.path}">${esc(ep.label)}</a>`).join('');
 
-// Clicar em "Acervo" recolhe/abre a lista; a escolha fica salva neste navegador.
-const grupoAcervo = $('acervoToggle').parentElement;
-function setAcervo(aberto) {
-  grupoAcervo.classList.toggle('collapsed', !aberto);
-  $('acervoToggle').setAttribute('aria-expanded', aberto);
-  localStorage.setItem('acervoAberto', aberto ? '1' : '0');
+// Grupos recolhíveis (Relatórios, cada mês, Acervo). A escolha fica salva neste navegador.
+// Padrão: Relatórios e Acervo abertos; só o mês mais recente aberto.
+function setGrupo(g, aberto, salvar = true) {
+  g.classList.toggle('collapsed', !aberto);
+  g.querySelector(':scope > .nav-toggle').setAttribute('aria-expanded', aberto);
+  if (salvar) localStorage.setItem('grupo:' + g.dataset.key, aberto ? '1' : '0');
 }
-setAcervo(localStorage.getItem('acervoAberto') !== '0');
-$('acervoToggle').onclick = () => setAcervo(grupoAcervo.classList.contains('collapsed'));
+document.querySelectorAll('.nav-group[data-key]').forEach(g => {
+  const salvo = localStorage.getItem('grupo:' + g.dataset.key);
+  setGrupo(g, salvo != null ? salvo === '1' : g.dataset.padrao !== 'fechado', false);
+  g.querySelector(':scope > .nav-toggle').onclick = () => setGrupo(g, g.classList.contains('collapsed'));
+});
 
 function abrir() {
   let rota = decodeURIComponent(location.hash.slice(1));
-  if (!rotas[rota]) rota = relatorios.length ? 'rel/' + relatorios[0].id : null;
+  if (!rotas[rota]) rota = document.querySelector('#navRelatorios a')?.dataset.rota || null; // 1º do mês mais recente
   document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.rota === rota));
+  // Se o item aberto estiver dentro de um grupo fechado (ex.: link direto), abre os grupos acima dele
+  for (let g = location.hash && document.querySelector('.nav a.active')?.closest('.nav-group'); g; g = g.parentElement.closest('.nav-group')) {
+    if (g.classList.contains('collapsed')) setGrupo(g, true, false);
+  }
   Object.values(views).forEach(v => { v.hidden = true; });
   $('app').classList.remove('menu-open');
   if (!rota) {
