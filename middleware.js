@@ -7,6 +7,15 @@ export default function middleware(request) {
   const usuario = process.env.SITE_USUARIO || 'admin';
   const senha = process.env.SITE_SENHA;
   const auth = request.headers.get('authorization') || '';
+  // Botão "Sair": aceita o usuário falso sair:sair só nesta rota, para o navegador
+  // substituir o login guardado; depois disso qualquer página volta a pedir a senha.
+  if (new URL(request.url).pathname === '/sair') {
+    const ok = auth === 'Basic ' + btoa('sair:sair');
+    return new Response(ok ? 'Saiu' : 'Acesso restrito', {
+      status: ok ? 200 : 401,
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  }
   if (senha && auth.startsWith('Basic ')) {
     const [u, ...resto] = atob(auth.slice(6)).split(':');
     if (u === usuario && resto.join(':') === senha) return; // segue para o site
