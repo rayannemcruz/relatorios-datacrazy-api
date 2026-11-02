@@ -26,7 +26,14 @@ http.createServer(async (req, res) => {
       return;
     }
     try {
-      const target = API_BASE + url.pathname.slice(4) + url.search;
+      // Mesmo formato da Vercel: /api/proxy?__path=<caminho>&<query>. Também aceita /api/<caminho>.
+      let target = API_BASE + url.pathname.slice(4) + url.search;
+      if (url.pathname === '/api/proxy') {
+        const caminho = (url.searchParams.get('__path') || '').replace(/^\/+/, '');
+        url.searchParams.delete('__path');
+        const qs = url.searchParams.toString();
+        target = API_BASE + '/' + caminho + (qs ? '?' + qs : '');
+      }
       const r = await fetch(target, { headers: { Authorization: `Bearer ${TOKEN}` } });
       res.writeHead(r.status, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(await r.text());

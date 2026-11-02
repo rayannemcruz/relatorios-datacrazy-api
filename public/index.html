@@ -165,7 +165,7 @@ const api = {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null)).toString();
     for (let tentativa = 0; tentativa < 4; tentativa++) {
       let res;
-      try { res = await fetch(API_URL + path + (qs ? '?' + qs : '')); }
+      try { res = await fetch(API_URL + '/proxy?__path=' + encodeURIComponent(path.replace(/^\/+/, '')) + (qs ? '&' + qs : '')); }
       catch { throw new Error(`Não foi possível conectar em ${API_URL}. Rode "npm start" na pasta do projeto.`); }
       if (res.status === 429) { await sleep((Number(res.headers.get('Retry-After')) || 10) * 1000); continue; }
       const text = await res.text();
