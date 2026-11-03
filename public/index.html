@@ -7,10 +7,12 @@
 <link rel="icon" href="data:,">
 <style>
   :root {
-    --bg: #f7f7f8; --surface: #fff; --border: #e7e7ea; --border-soft: #f0f0f2;
-    --text: #18181b; --muted: #71717a; --faint: #a1a1aa;
-    --accent: #4f46e5; --accent-soft: #eef0ff; --danger: #b91c1c; --ok: #15803d;
+    --bg: #F8FAFC; --surface: #FFFFFF; --border: #E2E8F0; --border-soft: #F1F5F9;
+    --text: #0F172A; --muted: #64748B; --faint: #94A3B8;
+    --accent: #2563EB; --accent-soft: #DBEAFE; --navy: #0F172A; --danger: #b91c1c; --ok: #15803d;
     --radius: 8px; --sidebar: 264px;
+    /* sidebar escura */
+    --side-text: #CBD5E1; --side-muted: #94A3B8; --side-hover: rgba(255,255,255,.06); --side-line: rgba(255,255,255,.08);
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -19,31 +21,34 @@
 
   /* ---------- layout ---------- */
   .app { display: flex; min-height: 100vh; }
-  .sidebar { width: var(--sidebar); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
-  .brand { padding: 20px 20px 16px; border-bottom: 1px solid var(--border-soft); }
-  .brand strong { display: block; font-size: 15px; letter-spacing: -.01em; }
-  .brand span { font-size: 12px; color: var(--muted); }
-  .nav { padding: 12px 10px 24px; }
-  .nav-group { margin-bottom: 18px; }
-  .nav-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); padding: 0 10px 6px; display: flex; justify-content: space-between; }
-  .nav a { display: block; padding: 7px 10px; border-radius: 6px; color: var(--text); text-decoration: none; font-size: 13.5px; }
-  .nav a:hover { background: var(--bg); }
-  .nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
-  .nav a small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; }
-  .nav a.active small { color: var(--accent); opacity: .75; }
-  .nav .none { font-size: 12.5px; color: var(--faint); padding: 4px 10px; }
+  .sidebar { width: var(--sidebar); flex-shrink: 0; background: var(--navy); color: var(--side-text); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+  .brand { padding: 22px 20px 18px; border-bottom: 1px solid var(--side-line); }
+  .brand strong { display: block; font-size: 16px; letter-spacing: -.01em; color: #fff; }
+  .brand span { font-size: 12px; color: var(--side-muted); }
+  .nav { padding: 14px 12px 24px; }
+  .nav-group { margin-bottom: 6px; }
+  .nav-title { font-size: 13.5px; font-weight: 500; color: var(--side-text); padding: 8px 10px; border-radius: 6px; display: flex; justify-content: space-between; }
+  .nav a { display: block; padding: 7px 10px; border-radius: 6px; color: var(--side-text); text-decoration: none; font-size: 13px; }
+  .nav a:hover { background: var(--side-hover); color: #fff; }
+  .nav a.active { background: var(--accent); color: #fff; font-weight: 500; }
+  .nav a small { display: block; font-size: 11.5px; color: var(--side-muted); font-weight: 400; }
+  .nav a.active small { color: #fff; opacity: .8; }
+  .nav .none { font-size: 12.5px; color: var(--side-muted); padding: 4px 10px; }
   .nav-toggle { width: 100%; background: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align: left; }
-  button.nav-title { font-size: 11px; color: var(--faint); }
-  button.nav-title:hover { color: var(--muted); }
-  .nav-month { padding: 6px 10px; font-size: 12.5px; font-weight: 500; color: var(--text); border-radius: 6px; }
-  .nav-month:hover { background: var(--bg); }
+  button.nav-title:hover, .nav-month:hover { background: var(--side-hover); color: #fff; }
+  .nav-title .lbl, .nav a.nav-main { display: flex; align-items: center; gap: 10px; }
+  .nav a.nav-main { font-size: 13.5px; font-weight: 500; padding: 8px 10px; margin-bottom: 6px; }
+  .nav-ico { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-month { padding: 6px 10px; font-size: 12.5px; font-weight: 500; color: var(--side-text); border-radius: 6px; }
   .nav-toggle .right { display: flex; align-items: center; gap: 8px; }
-  .nav-toggle .count { font-size: 11px; color: var(--faint); font-weight: 500; }
-  .chev { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin: 0 4px 3px 0; transition: transform .15s; color: var(--faint); }
+  .nav-toggle .count { font-size: 11px; color: var(--side-muted); font-weight: 500; }
+  .chev { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin: 0 4px 3px 0; transition: transform .15s; color: var(--side-muted); }
   .nav-group.collapsed > .nav-toggle .chev { transform: rotate(-45deg); margin-bottom: 0; }
   .nav-group.collapsed > .nav-items { display: none; }
+  .nav-group > .nav-items { margin: 2px 0 8px 18px; padding-left: 10px; border-left: 1px solid var(--side-line); }
   .nav-sub { margin-bottom: 2px; }
-  .nav-sub > .nav-items { padding-left: 10px; margin: 2px 0 6px 10px; border-left: 1px solid var(--border-soft); }
+  .nav-sub > .nav-items { margin: 2px 0 6px 10px; }
+  .nav-group.destaque > .nav-toggle { background: var(--side-hover); color: #fff; }
 
   .main { flex: 1; min-width: 0; padding: 32px 40px 64px; }
   .view { max-width: 1280px; }
@@ -92,10 +97,28 @@
   .error { color: var(--danger); }
   .welcome { padding: 64px 16px; text-align: center; color: var(--muted); }
   .welcome h1 { color: var(--text); font-size: 18px; margin: 0 0 6px; }
-  .home { min-height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center; }
-  .home h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
   a.brand { display: block; color: inherit; text-decoration: none; }
-  a.brand:hover strong { color: var(--accent); }
+
+  /* ---------- tela inicial ---------- */
+  .home { max-width: 1120px; }
+  .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px 44px; margin-bottom: 24px; }
+  .hero .ola { color: var(--accent); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
+  .hero h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.2; font-weight: 700; letter-spacing: -.025em; color: var(--navy); }
+  .hero p.desc { margin: 0; color: var(--muted); font-size: 15px; max-width: 440px; }
+  .hero-chart { width: 100%; height: auto; display: block; }
+  .home-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .home-card { display: block; text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; cursor: pointer; color: var(--text); text-decoration: none; transition: border-color .15s, box-shadow .15s; }
+  .home-card:hover { border-color: #BFDBFE; box-shadow: 0 6px 20px rgba(15, 23, 42, .06); }
+  .home-card .ico { width: 42px; height: 42px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .home-card .ico svg { width: 22px; height: 22px; }
+  .home-card strong { display: block; font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--navy); }
+  .home-card span { color: var(--muted); font-size: 13px; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: minmax(0, 1fr); padding: 28px 24px; }
+    .hero > * { min-width: 0; }
+    .hero h1 { font-size: 24px; }
+    .home-cards { grid-template-columns: 1fr; }
+  }
 
   dialog { width: min(860px, 92vw); max-height: 85vh; border: 1px solid var(--border); border-radius: 10px; padding: 0; box-shadow: 0 20px 50px rgba(0,0,0,.15); }
   dialog::backdrop { background: rgba(24,24,27,.35); }
@@ -118,12 +141,13 @@
   <aside class="sidebar">
     <a class="brand" href="#" title="Tela inicial"><strong>DataCrazy</strong><span>Relatórios e dados do CRM</span></a>
     <nav class="nav">
-      <div class="nav-group" data-key="relatorios">
-        <button class="nav-title nav-toggle"><span>Relatórios</span><span class="right"><span class="count" id="relCount"></span><span class="chev"></span></span></button>
+      <a href="#" class="nav-main" data-rota=""><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Início</a>
+      <div class="nav-group" data-key="relatorios" id="grupoRelatorios">
+        <button class="nav-title nav-toggle"><span class="lbl"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Relatórios</span><span class="right"><span class="count" id="relCount"></span><span class="chev"></span></span></button>
         <div id="navRelatorios" class="nav-items"></div>
       </div>
-      <div class="nav-group" data-key="acervo">
-        <button class="nav-title nav-toggle"><span>Acervo</span><span class="right"><span class="chev"></span></span></button>
+      <div class="nav-group" data-key="acervo" id="grupoAcervo">
+        <button class="nav-title nav-toggle"><span class="lbl"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v13H3z"/><path d="M3 7l2-4h14l2 4"/><path d="M10 12h4"/></svg>Acervo</span><span class="right"><span class="chev"></span></span></button>
         <div id="navAcervo" class="nav-items"></div>
       </div>
     </nav>
@@ -398,10 +422,66 @@ document.querySelectorAll('.nav-group[data-key]').forEach(g => {
   g.querySelector(':scope > .nav-toggle').onclick = () => setGrupo(g, g.classList.contains('collapsed'));
 });
 
+// ---------- TELA INICIAL (estática: não faz nenhuma requisição à API) ----------
+const ICONES = {
+  relatorios: '<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>',
+  acervo: '<path d="M3 7h18v13H3z"/><path d="M3 7l2-4h14l2 4"/><path d="M10 12h4"/>',
+  desempenho: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+};
+const icone = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[k]}</svg>`;
+
+function telaInicial() {
+  // Gráfico ilustrativo: linha crescente, sem números nem eixos
+  const pts = [[20, 190], [70, 172], [115, 180], [160, 140], [205, 150], [250, 108], [295, 118], [340, 70], [380, 40]];
+  const linha = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ');
+  const grafico = `<svg class="hero-chart" viewBox="0 0 400 220" aria-hidden="true">
+    <defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563EB" stop-opacity=".22"/><stop offset="1" stop-color="#2563EB" stop-opacity="0"/></linearGradient></defs>
+    ${[50, 100, 150, 200].map(y => `<line x1="10" x2="390" y1="${y}" y2="${y}" stroke="#E2E8F0" stroke-dasharray="4 6"/>`).join('')}
+    <path d="${linha} L380 210 L20 210 Z" fill="url(#gArea)"/>
+    <path d="${linha}" fill="none" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.slice(1, -1).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#fff" stroke="#93C5FD" stroke-width="2"/>`).join('')}
+    <circle cx="380" cy="40" r="10" fill="#DBEAFE"/><circle cx="380" cy="40" r="5" fill="#2563EB"/>
+  </svg>`;
+  const card = (k, titulo, texto) => `<button class="home-card" data-ir="${k}"><div class="ico">${icone(k)}</div><strong>${titulo}</strong><span>${texto}</span></button>`;
+  return `<div class="view-head">${menuBtn}</div>
+    <div class="home">
+      <section class="hero">
+        <div>
+          <p class="ola">Bem-vindo(a)!</p>
+          <h1>Relatórios BS Seguros e DataCrazy</h1>
+          <p class="desc">Acompanhe os principais indicadores, resultados e dados do CRM em um só lugar.</p>
+        </div>
+        ${grafico}
+      </section>
+      <div class="home-cards">
+        ${card('relatorios', 'Relatórios', 'Visualize os indicadores e resultados do CRM.')}
+        ${card('acervo', 'Acervo', 'Acesse materiais, planilhas e documentos.')}
+        ${card('desempenho', 'Desempenho', 'Acompanhe a evolução das suas operações.')}
+      </div>
+    </div>`;
+}
+
+// Cards da tela inicial: Relatórios e Acervo abrem o grupo na lateral; Desempenho abre o relatório de desempenho mais recente.
+document.addEventListener('click', e => {
+  const card = e.target.closest('[data-ir]');
+  if (!card) return;
+  const ir = card.dataset.ir;
+  if (ir === 'desempenho') {
+    const rel = relatorios.find(r => /desempenho/i.test(r.id)) || relatorios[0];
+    if (rel) { location.hash = 'rel/' + encodeURIComponent(rel.id); return; }
+  }
+  const g = $(ir === 'acervo' ? 'grupoAcervo' : 'grupoRelatorios');
+  setGrupo(g, true);
+  $('app').classList.add('menu-open');
+  g.classList.add('destaque');
+  g.scrollIntoView({ block: 'nearest' });
+  setTimeout(() => g.classList.remove('destaque'), 1500);
+});
+
 function abrir() {
   let rota = decodeURIComponent(location.hash.slice(1));
   if (!rotas[rota]) rota = null; // tela inicial: não busca nada na API até o usuário escolher um item
-  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.rota === rota));
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.rota === (rota || '')));
   // Se o item aberto estiver dentro de um grupo fechado (ex.: link direto), abre os grupos acima dele
   for (let g = location.hash && document.querySelector('.nav a.active')?.closest('.nav-group'); g; g = g.parentElement.closest('.nav-group')) {
     if (g.classList.contains('collapsed')) setGrupo(g, true, false);
@@ -412,7 +492,7 @@ function abrir() {
     if (!views.inicio) {
       views.inicio = document.createElement('section');
       views.inicio.className = 'view';
-      views.inicio.innerHTML = `<div class="view-head">${menuBtn}</div><div class="home"><h1>Relatórios BS Seguros e DataCrazy</h1></div>`;
+      views.inicio.innerHTML = telaInicial();
       $('main').appendChild(views.inicio);
     }
     views.inicio.hidden = false;
