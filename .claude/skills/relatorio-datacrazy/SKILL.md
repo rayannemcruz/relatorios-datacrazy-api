@@ -9,8 +9,8 @@ description: Gera um novo relatório sob demanda no site do DataCrazy deste proj
 
 A página `public/index.html` tem uma **sidebar** à esquerda e o conteúdo à direita. Visual limpo e **sem emojis** (inclusive em títulos de relatório e rótulos).
 
-1. **Relatórios** (primeiro grupo da sidebar, recolhível): os relatórios ficam agrupados **por mês** (ex.: "Novembro 2026"), cada mês também recolhível. O mês vem do `criadoEm` (DD/MM/AAAA), por isso ele precisa estar sempre preenchido com a data de hoje. Mês mais recente no topo e aberto; dentro do mês, o dia mais recente primeiro. Ao abrir o site, o primeiro relatório do mês mais recente já aparece. Cada relatório busca os dados **ao vivo** na API quando é aberto e tem um botão "Atualizar". Link direto: `#rel/<id>`.
-2. **Acervo** (segundo grupo da sidebar, recolhível): TODOS os endpoints de listagem da API (leads, negócios, pipelines, conversas, atividades, tags, listas, produtos, conexões, atendentes multi/CRM, motivos de perda). Cada um só busca os dados quando é aberto. **O Acervo é fixo**: não acrescente relatórios nele e não o altere ao criar relatórios.
+1. **Relatórios** (primeiro grupo da sidebar, recolhível): os relatórios ficam agrupados **por mês** (ex.: "Novembro 2026"), cada mês também recolhível. O mês vem do `criadoEm` (DD/MM/AAAA), por isso ele precisa estar sempre preenchido com a data de hoje. Mês mais recente no topo e aberto; dentro do mês, o dia mais recente primeiro. Ao abrir o site aparece uma **tela inicial** (lista dos relatórios por mês, sem nenhuma requisição à API); a API só é chamada quando o usuário abre um relatório ou item do Acervo. Clicar em "DataCrazy" no topo da sidebar volta para ela. Cada relatório busca os dados **ao vivo** na API quando é aberto e tem um botão "Atualizar". Link direto: `#rel/<id>`.
+2. **Acervo** (segundo grupo da sidebar, recolhível): TODOS os endpoints de listagem da API (leads, negócios, pipelines, conversas, atividades, tags, listas, produtos, conexões, atendentes multi/CRM, motivos de perda). Cada um só busca os dados quando é aberto. **O Acero é fixo**: não acrescente relatórios nele e não o altere ao criar relatórios.
 
 Arquivos:
 
