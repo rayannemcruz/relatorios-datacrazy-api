@@ -149,3 +149,99 @@ RELATORIOS.push({
     };
   },
 });
+
+RELATORIOS.push({
+  id: 'desempenho-atendentes-outubro-2026',
+  titulo: 'Desempenho por atendente em outubro de 2026',
+  pedido: 'gere para mim um relatorio do mes de outubro com o desenpenho por consultor/atendente: tempo de primiera resposta, taxa de conversao e lead sem retorno',
+  criadoEm: '02/11/2026',
+  descricao: 'Leads criados de 01/10 a 31/10/2026 (horário de Brasília), via GET /leads com filter[createdAtGreaterOrEqual/LessOrEqual], agrupados pelo atendente do lead. '
+    + 'Convertido = lead com negócio (criado a partir de 01/10) nas etapas APÓLICE EMITIDA ou VENDAS EMITIDAS. '
+    + 'Sem retorno = a última mensagem da conversa foi do lead, ou ele mandou mensagem e nunca recebeu resposta (contato do lead, lastContactStatus). '
+    + 'Mensagens automáticas contam como resposta. Sem conversa = lead sem nenhuma mensagem registrada. '
+    + 'O tempo de primeira resposta ficou de fora: exigiria abrir conversa por conversa (limite de 60 por minuto na API). '
+    + 'Tabela ordenada pelo número de leads.',
+  async gerar(api, fmt) {
+    const INI = '2026-10-01T03:00:00.000Z';
+    const FIM = '2026-11-01T02:59:59.999Z';
+    const agora = Date.now();
+    const nome = s => (s || '').replace(/\s+/g, ' ').trim();
+    const pct = (n, t) => t ? (n / t * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+    const leads = await api.getAll('/leads', {
+      'filter[createdAtGreaterOrEqual]': INI, 'filter[createdAtLessOrEqual]': FIM,
+    }, { max: 20000 });
+    const idsLeads = new Set(leads.map(l => l.id));
+    const negocios = (await api.getAll('/businesses', { 'filter[createdAtGreaterOrEqual]': INI }, { max: 20000 }))
+      .filter(b => idsLeads.has(b.leadId));
+    const convertidos = new Set(negocios.filter(b => /emitid/i.test(b.stage?.name || '')).map(b => b.leadId));
+
+    // Situação da conversa de cada lead, pelos últimos envios/recebimentos dos contatos
+    for (const l of leads) {
+      const cs = (l.contacts || []).map(c => c.lastContactStatus).filter(Boolean);
+      const rec = Math.max(0, ...cs.map(c => c.lastReceivedMessage ? Date.parse(c.lastReceivedMessage.date) : 0));
+      const env = Math.max(0, ...cs.map(c => c.lastSendedMessage ? Date.parse(c.lastSendedMessage.date) : 0));
+      l._semConversa = !rec && !env;
+      l._semRetorno = rec > 0 && rec > env;
+      l._ultimaDoLead = rec ? new Date(rec).toISOString() : null;
+      l._ultimoEnvio = env ? new Date(env).toISOString() : null;
+      l._esperaDias = rec ? Math.floor((agora - rec) / 86400000) : null;
+      l._convertido = convertidos.has(l.id);
+      l._atendente = nome(l.attendant?.name) || 'Sem atendente';
+    }
+
+    const grupos = new Map();
+    for (const l of leads) {
+      if (!grupos.has(l._atendente)) grupos.set(l._atendente, []);
+      grupos.get(l._atendente).push(l);
+    }
+    const linhas = [...grupos.entries()].map(([atendente, ls]) => ({
+      atendente,
+      leads: ls.length,
+      convertidos: ls.filter(l => l._convertido).length,
+      semRetorno: ls.filter(l => l._semRetorno).length,
+      semConversa: ls.filter(l => l._semConversa).length,
+    })).sort((a, b) => (a.atendente === 'Sem atendente') - (b.atendente === 'Sem atendente') || b.leads - a.leads);
+
+    const totConv = leads.filter(l => l._convertido).length;
+    const semRetorno = leads.filter(l => l._semRetorno).sort((a, b) => b._esperaDias - a._esperaDias);
+    const semAtendente = grupos.get('Sem atendente')?.length || 0;
+
+    return {
+      resumo: [
+        { label: 'Leads de outubro', valor: fmt.num(leads.length) },
+        { label: 'Convertidos (emitidos)', valor: `${fmt.num(totConv)} (${pct(totConv, leads.length)})` },
+        { label: 'Sem retorno', valor: `${fmt.num(semRetorno.length)} (${pct(semRetorno.length, leads.length)})` },
+        { label: 'Leads sem atendente', valor: `${fmt.num(semAtendente)} (${pct(semAtendente, leads.length)})` },
+      ],
+      secoes: [
+        {
+          titulo: 'Desempenho por atendente',
+          colunas: [
+            ['Atendente', r => fmt.esc(r.atendente)],
+            ['Leads', r => fmt.num(r.leads)],
+            ['Convertidos', r => fmt.num(r.convertidos)],
+            ['Taxa de conversão', r => pct(r.convertidos, r.leads)],
+            ['Sem retorno', r => fmt.num(r.semRetorno)],
+            ['% sem retorno', r => pct(r.semRetorno, r.leads)],
+            ['Sem conversa', r => fmt.num(r.semConversa)],
+          ],
+          linhas,
+        },
+        {
+          titulo: 'Leads sem retorno (há mais tempo esperando primeiro)',
+          colunas: [
+            ['Lead', r => fmt.esc(nome(r.name))],
+            ['Telefone', r => fmt.esc(r.phone)],
+            ['Atendente', r => fmt.esc(r._atendente)],
+            ['Última mensagem do lead', r => fmt.date(r._ultimaDoLead)],
+            ['Última resposta enviada', r => r._ultimoEnvio ? fmt.date(r._ultimoEnvio) : fmt.badge('Nunca')],
+            ['Esperando há', r => `${fmt.num(r._esperaDias)} dias`],
+            ['Etiquetas', r => fmt.tags(r.tags)],
+          ],
+          linhas: semRetorno,
+        },
+      ],
+    };
+  },
+});
